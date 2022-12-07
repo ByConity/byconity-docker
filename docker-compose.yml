@@ -1,0 +1,168 @@
+version: "3"
+services:
+# hdfs / remote fs
+  hdfs:
+    image: sequenceiq/hadoop-docker:2.7.0
+    ports:
+      - "8080:8080"
+      - "50070:50070"
+      - "50075:50075"
+    volumes:
+      - "./hadoop:/hadoop"
+    networks:
+      network:
+        ipv4_address: 10.5.0.31
+    container_name: hdfs-0
+
+# foundation db / catalog
+  fdb:
+    image: foundationdb/foundationdb:7.1.11
+    ports:
+      - "4550:4550"
+    environment:
+      FDB_NETWORKING_MODE: container
+      FDB_COORDINATOR_PORT: 4550
+      FDB_PORT: 4550
+    container_name: fdb-0
+    networks:
+      network:
+        ipv4_address: 10.5.0.21
+
+# byconity:
+  tso:
+    image: hub.byted.org/clickhouse/byconity:2.0.0.27
+    command: bash -c "./fdbcli -C /etc/byconity/fdb/fdb.cluster --exec \"configure new single ssd\"; tso-server --config-file tso.yml"
+    depends_on:
+      - fdb
+      - hdfs
+    volumes:
+      - "./byconity/tso.yml:/tso.yml"
+      - "./fdb/fdbcli:/fdbcli"
+      - "./fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
+    # evironment:
+    container_name: tso-0
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - "10.5.0.3:18845/status"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    container_name: tso-0
+    networks:
+      network:
+        ipv4_address: 10.5.0.3
+    cap_add:
+      - SYS_PTRACE
+
+  server:
+    image: hub.byted.org/clickhouse/byconity:2.0.0.27
+    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 10.5.0.3:18845/status && clickhouse-server --config-file server.yml"
+    depends_on:
+      - tso
+      - hdfs
+    ports:
+      - "52145:52145"
+      - "21557:21557"
+    container_name: server-0
+    volumes:
+      - "./byconity/server.yml:/server.yml"
+      - "./byconity/users.yml:/users.yml"
+      - "./fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
+      - "./fdb/fdbcli:/fdbcli"
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - "10.5.0.4:21557/?query=SELECT%201"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      network:
+        ipv4_address: 10.5.0.4
+    cap_add:
+      - SYS_PTRACE
+
+  worker-write:
+    image: hub.byted.org/clickhouse/byconity:2.0.0.27
+    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 10.5.0.4:21557 && clickhouse-server --config-file worker-write.yml"
+    depends_on:
+      - server
+    container_name: worker-write-0
+    volumes:
+      - "./byconity/worker-write.yml:/worker-write.yml"
+      - "./byconity/users.yml:/users.yml"
+      - "./fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
+      - "./fdb/fdbcli:/fdbcli"
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - "10.5.0.5:13761/?query=SELECT%201"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      network:
+        ipv4_address: 10.5.0.5
+    cap_add:
+      - SYS_PTRACE
+
+  worker-default:
+    image: hub.byted.org/clickhouse/byconity:2.0.0.27
+    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 10.5.0.4:21557 && clickhouse-server --config-file worker-default.yml"
+    depends_on:
+      - server
+    container_name: worker-default-0
+    volumes:
+      - "./byconity/worker-default.yml:/worker-default.yml"
+      - "./byconity/users.yml:/users.yml"
+      - "./fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
+      - "./fdb/fdbcli:/fdbcli"
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - "10.5.0.6:50993/?query=SELECT%201"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      network:
+        ipv4_address: 10.5.0.6
+    
+    cap_add:
+      - SYS_PTRACE
+
+  daemon-manager:
+    image: hub.byted.org/clickhouse/byconity:2.0.0.27
+    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 10.5.0.4:21557 && daemon-manager --config-file daemon-manager.yml"
+    depends_on:
+      - server
+    container_name: daemon-manager-0
+    volumes:
+      - "./byconity/daemon-manager.yml:/daemon-manager.yml"
+      - "./fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
+      - "./fdb/fdbcli:/fdbcli"
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - "10.5.0.7:17553/status"
+      interval: 10s
+      timeout: 5s
+      retries: 5 
+    networks:
+      network:
+        ipv4_address: 10.5.0.7
+    cap_add:
+      - SYS_PTRACE
+
+networks:
+  network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
