@@ -60,7 +60,7 @@ services:
 
 # foundation db / catalog
   fdb:
-    image: foundationdb/foundationdb:7.1.11
+    image: foundationdb/foundationdb:7.1.24
     ports:
       - "4550:4550"
     environment:
