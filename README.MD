@@ -29,9 +29,10 @@ docker run -it --network byconity_network -v "`pwd`/byconity/server.yml:/client.
 Internally, byconity read/write to hdfs with username `clickhouse`, which is not created by default when starting hadoop cluster. We can use following commands to create the user `clickhouse` on hdfs.
 
 ```s
-docker exec hdfs-0 /usr/local/hadoop/bin/hdfs dfs -mkdir /user/clickhouse
-docker exec hdfs-0 /usr/local/hadoop/bin/hdfs dfs -chown clickhouse /user/clickhouse
-docker exec hdfs-0 /usr/local/hadoop/bin/hdfs dfs -chmod -R 775 /user/clickhouse 
+docker exec hdfs-namenode-0 hdfs dfs -mkdir /user
+docker exec hdfs-namenode-0 hdfs dfs -mkdir /user/clickhouse
+docker exec hdfs-namenode-0 hdfs dfs -chown clickhouse /user/clickhouse
+docker exec hdfs-namenode-0 hdfs dfs -chmod -R 775 /user/clickhouse 
 ```
 
 Use following command to open a client terminal to server
