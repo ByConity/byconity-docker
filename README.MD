@@ -26,7 +26,7 @@ docker run -it --network byconity_network -v "`pwd`/byconity/server.yml:/client.
 
 ## Trying some queries
 
-Internally, byconity read/write to hdfs with username `clickhouse`, which is not created by default when starting hadoop cluster. We can use following commands to create the user `clickhouse` on hdfs.
+Internally, byconity read/write to hdfs with username `clickhouse` (and data is stored in `/user/clickhouse/`), which is not created by default when starting hadoop cluster. We can use following commands to create the user `clickhouse` on hdfs.
 
 ```s
 docker exec hdfs-namenode-0 hdfs dfs -mkdir /user
@@ -77,3 +77,65 @@ Query id: b5c4bc8e-b768-432c-b24c-1aa98c5e512d
 
 10 rows in set. Elapsed: 0.015 sec. 
 ```
+
+## A deeper look in to how the data is stored
+
+In byconity, the metadata is stored on FoundationDB, while the actual data is store on HDFS. Let's take a look at both of them.
+
+### Metadata
+
+The metadata includes databases, tables, partitions, and parts. Here we only focus on how we store a part in FoundationDB. While you can use `fdbcli` to directly retrieve the data, we provide a system table `system.cnch_parts` to help you quickly query the metadata of a table:
+
+```
+┌─name─────────────────┬─type──────────────────────────────────────────────────────────────────────────────┬─flags─┬─default_type─┬─default_expression─┬─comment─┬─codec_expression─┬─ttl_expression─┐
+│ database             │ String                                                                            │       │              │                    │         │                  │                │
+│ table                │ String                                                                            │       │              │                    │         │                  │                │
+│ table_uuid           │ UUID                                                                              │       │              │                    │         │                  │                │
+│ partition            │ String                                                                            │       │              │                    │         │                  │                │
+│ name                 │ String                                                                            │       │              │                    │         │                  │                │
+│ bytes_on_disk        │ UInt64                                                                            │       │              │                    │         │                  │                │
+│ rows_count           │ UInt64                                                                            │       │              │                    │         │                  │                │
+│ columns              │ String                                                                            │       │              │                    │         │                  │                │
+│ marks_count          │ UInt64                                                                            │       │              │                    │         │                  │                │
+│ index_granularity    │ Array(UInt64)                                                                     │       │              │                    │         │                  │                │
+│ commit_time          │ DateTime                                                                          │       │              │                    │         │                  │                │
+│ kv_commit_time       │ DateTime                                                                          │       │              │                    │         │                  │                │
+│ columns_commit_time  │ DateTime                                                                          │       │              │                    │         │                  │                │
+│ mutation_commit_time │ DateTime                                                                          │       │              │                    │         │                  │                │
+│ previous_version     │ UInt64                                                                            │       │              │                    │         │                  │                │
+│ partition_id         │ String                                                                            │       │              │                    │         │                  │                │
+│ bucket_number        │ Int64                                                                             │       │              │                    │         │                  │                │
+│ outdated             │ UInt8                                                                             │       │              │                    │         │                  │                │
+│ visible              │ UInt8                                                                             │       │              │                    │         │                  │                │
+│ part_type            │ Enum8('VisiblePart' = 1, 'InvisiblePart' = 2, 'DropRange' = 3, 'DroppedPart' = 4) │       │              │                    │         │                  │                │
+│ active               │ UInt8                                                                             │       │ ALIAS        │ visible            │         │                  │                │
+│ bytes                │ UInt64                                                                            │       │ ALIAS        │ bytes_on_disk      │         │                  │                │
+│ rows                 │ UInt64                                                                            │       │ ALIAS        │ rows_count         │         │                  │                │
+└──────────────────────┴───────────────────────────────────────────────────────────────────────────────────┴───────┴──────────────┴────────────────────┴─────────┴──────────────────┴────────────────┘
+```
+
+Let's try to query all metadata of above example table:
+
+```sql
+SELECT
+    name,
+    rows,
+    bytes,
+    part_type
+FROM system.cnch_parts
+WHERE (database = 'test') AND (table = 'events')
+
+Query id: 58c9113e-866f-4a9e-80ee-2d3283b2e4a8
+
+┌─name───────────────────────────────────────────────────────────┬─rows─┬─bytes─┬─part_type───┐
+│ all_438015441180033025_438015441180033025_0_438015441166663680 │   10 │  1012 │ VisiblePart │
+└────────────────────────────────────────────────────────────────┴──────┴───────┴─────────────┘
+```
+
+### Remote data
+
+You can open the hdfs at localhost:9870 to see how the data is stored. Byconity store each data part as a single file name `data` and the path is `{disk_root}/{table_uuid}/{part_name}/`. In the above example, the data on hdfs is as follow:
+
+![Table path on disk](images/hdfs_path.png)
+
+![Data part file on disk](images/hdfs_file.png)

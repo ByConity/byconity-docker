@@ -1,19 +1,6 @@
 version: "3"
 services:
 # hdfs / remote fs
-  # hdfs:
-  #   image: sequenceiq/hadoop-docker:2.7.0
-  #   ports:
-  #     - "8080:8080"
-  #     - "50070:50070"
-  #     - "50075:50075"
-  #   volumes:
-  #     - "./hadoop:/hadoop"
-  #   networks:
-  #     network:
-  #       ipv4_address: 10.5.0.31
-  #   container_name: hdfs-0
-
   hdfs:
     image: gchq/hdfs:3.3
     command: namenode
@@ -56,8 +43,6 @@ services:
     - "hdfs-namenode:10.5.0.31"
 
 
-
-
 # foundation db / catalog
   fdb:
     image: foundationdb/foundationdb:7.1.24
@@ -93,7 +78,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    container_name: tso-0
     networks:
       network:
         ipv4_address: 10.5.0.3
