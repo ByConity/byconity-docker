@@ -1,6 +1,39 @@
-## Start the cluster
+## Prerequisite
 
-Make sure you have `docker` and `docker-compose` installed on your system. From current directory, run:
+Before running, make sure your system has following prerequisite:
+
+- docker
+- docker-compose
+- a docker runtime is up and running
+
+If you're using MacOS and cannot use docker desktop, you can:
+
+1. Install `docker` and `docker-compose` with `brew install docker docker-compose`
+2. Use [Colima](https://github.com/abiosoft/colima) to create a docker runtime env
+
+## Cluster architecture
+
+We are going to deploy a byconity cluster with following architecture:
+
+![cluster](images/architect.png)
+
+Four byconity components are:
+
+- server: manage databases and tables, interacting with client, coordinate workers to handle query
+- worker-write: handle write (INSERT)
+- worker-read: handle read (SELECT)
+- daemon-manager: manage the background jobs (merge, kafka, etc...)
+
+There could be more than one worker-write and worker-default, and they can be organized into a **virtual warehouse**. When a virtual warehouse have multiple worker-write, each write query will randomly select a worker to run. When a virtual warehouse have multiple worker-default, a select query will be parallelized among as much workers as possible.
+
+In addition, there're following components in the cluster:
+
+- foudationdb: a transactional kv database, all metadata of databases and tables will be stored here
+- hdfs: include one namenode and one datanode, is the *primary* storage of all tables data
+
+## Bring the cluster up
+
+From the current directory, run:
 
 ```
 docker-compose up
@@ -24,7 +57,7 @@ Check the tcp protocol by sending a simple query.
 docker run -it --network byconity_network -v "`pwd`/byconity/server.yml:/client.yml" hub.byted.org/clickhouse/byconity:2.0.0.27 clickhouse-client -C client.yml --host 10.5.0.4 --query "SELECT count() FROM numbers(10)"
 ```
 
-## Trying some queries
+## Trying some basic queries
 
 Internally, byconity read/write to hdfs with username `clickhouse` (and data is stored in `/user/clickhouse/`), which is not created by default when starting hadoop cluster. We can use following commands to create the user `clickhouse` on hdfs.
 
@@ -78,7 +111,7 @@ Query id: b5c4bc8e-b768-432c-b24c-1aa98c5e512d
 10 rows in set. Elapsed: 0.015 sec. 
 ```
 
-## A deeper look in to how the data is stored
+## A quick look into how the data is stored
 
 In byconity, the metadata is stored on FoundationDB, while the actual data is store on HDFS. Let's take a look at both of them.
 
@@ -134,8 +167,12 @@ Query id: 58c9113e-866f-4a9e-80ee-2d3283b2e4a8
 
 ### Remote data
 
-You can open the hdfs at localhost:9870 to see how the data is stored. Byconity store each data part as a single file name `data` and the path is `{disk_root}/{table_uuid}/{part_name}/`. In the above example, the data on hdfs is as follow:
+You can open the hdfs at `localhost:9870` to see how the data is stored. Byconity store each data part as a single file name `data` and the path is `{disk_root}/{table_uuid}/{part_name}/`. In the above example, the data on hdfs is as follow:
 
 ![Table path on disk](images/hdfs_path.png)
 
+Each table will have an UUID, and the path on hdfs is `{disk_root}/{table_uuid}`. Inside the table path, each part is stored in a single file name`data` and the path is `{disk_root}/{table_uuid}/{part_name}/`.
+
 ![Data part file on disk](images/hdfs_file.png)
+
+## SSB benchmark
