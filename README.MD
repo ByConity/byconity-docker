@@ -43,20 +43,12 @@ Wait until all containers are ready. We can use following commands to check the 
 
 ```s
 # return 1 indicates that server is working properly
-curl '127.0.0.1:21557/?query=SELECT%20count()%20FROM%20system.one'
+curl '127.0.0.1:21557/?query=select%20count()%20from%20system.one'
 # return 1 indicates that read worker is working properly and server can connect to it
-curl '127.0.0.1:21557/?query=SELECT%20count()%20FROM%20cnch(`vw_default`,system,one)'
+curl '127.0.0.1:21557/?query=select%20count()%20from%20cnch(`vw_default`,system,one)'
 # return 1 indicates that write worker is working properly and server can connect to it
-curl '127.0.0.1:21557/?query=SELECT%20count()%20FROM%20cnch(`vw_write`,system,one)'
+curl '127.0.0.1:21557/?query=select%20count()%20from%20cnch(`vw_write`,system,one)'
 ```
-
-Check the tcp protocol by sending a simple query.
-
-```s
-# return 10 indicates that tcp server is working properly
-docker run -it --network byconity_network -v "`pwd`/byconity/server.yml:/client.yml" hub.byted.org/clickhouse/byconity:2.0.0.27 clickhouse-client -C client.yml --host 10.5.0.4 --query "SELECT count() FROM numbers(10)"
-```
-
 ## Trying some basic queries
 
 Internally, byconity read/write to hdfs with username `clickhouse` (and data is stored in `/user/clickhouse/`), which is not created by default when starting hadoop cluster. We can use following commands to create the user `clickhouse` on hdfs.
@@ -175,4 +167,3 @@ Each table will have an UUID, and the path on hdfs is `{disk_root}/{table_uuid}`
 
 ![Data part file on disk](images/hdfs_file.png)
 
-## SSB benchmark
