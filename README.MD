@@ -54,7 +54,7 @@ Check the tcp protocol by sending a simple query.
 
 ```s
 # return 10 indicates that tcp server is working properly
-docker run -it --network byconity_network -v "`pwd`/byconity/server.yml:/client.yml" hub.byted.org/clickhouse/byconity:2.0.0.27 clickhouse-client -C client.yml --host 10.5.0.4 --query "SELECT count() FROM numbers(10)"
+docker run -it --network byconity_network -v "`pwd`/byconity/server.yml:/client.yml" canhld/byconity:beta clickhouse-client -C client.yml --host 10.5.0.4 --query "SELECT count() FROM numbers(10)"
 ```
 
 ## Trying some basic queries
@@ -71,7 +71,7 @@ docker exec hdfs-namenode-0 hdfs dfs -chmod -R 775 /user/clickhouse
 Use following command to open a client terminal to server
 
 ```s
-docker run -it --network byconity_network -v "`pwd`/byconity/server.yml:/client.yml" hub.byted.org/clickhouse/byconity:2.0.0.27 clickhouse-client -C client.yml --host 10.5.0.4
+docker run -it --network byconity_network -v "`pwd`/byconity/server.yml:/client.yml" canhld/byconity:beta clickhouse-client -C client.yml --host 10.5.0.4
 ```
 
 We can use following queries to create a database, create a table, insert some data to table, and query from it:
