@@ -15,7 +15,7 @@ If you're using MacOS and cannot use docker desktop, you can:
 
 We are going to deploy a byconity cluster with following architecture:
 
-![cluster](images/architect.png)
+![cluster](assets/architect.png)
 
 Four byconity components are:
 
@@ -183,11 +183,11 @@ Query id: 58c9113e-866f-4a9e-80ee-2d3283b2e4a8
 
 You can open the hdfs at `localhost:9870` to see how the data is stored. Byconity store each data part as a single file name `data` and the path is `{disk_root}/{table_uuid}/{part_name}/`. In the above example, the data on hdfs is as follow:
 
-![Table path on disk](images/hdfs_path.png)
+![Table path on disk](assets/hdfs_path.png)
 
 Each table will have an UUID, and the path on hdfs is `{disk_root}/{table_uuid}`. Inside the table path, each part is stored in a single file name`data` and the path is `{disk_root}/{table_uuid}/{part_name}/`.
 
-![Data part file on disk](images/hdfs_file.png)
+![Data part file on disk](assets/hdfs_file.png)
 
 ## SSB benchmark
 
