@@ -49,6 +49,14 @@ curl '127.0.0.1:21557/?query=select%20count()%20from%20cnch(`vw_default`,system,
 # return 1 indicates that write worker is working properly and server can connect to it
 curl '127.0.0.1:21557/?query=select%20count()%20from%20cnch(`vw_write`,system,one)'
 ```
+
+Check the tcp protocol by sending a simple query.
+
+```s
+# return 10 indicates that tcp server is working properly
+docker exec -it server-0 clickhouse-client -C server.yml --host 10.5.0.4 --query "SELECT count() FROM numbers(10)"
+```
+
 ## Trying some basic queries
 
 Internally, byconity read/write to hdfs with username `clickhouse` (and data is stored in `/user/clickhouse/`), which is not created by default when starting hadoop cluster. We can use following commands to create the user `clickhouse` on hdfs.
@@ -60,10 +68,24 @@ docker exec hdfs-namenode-0 hdfs dfs -chown clickhouse /user/clickhouse
 docker exec hdfs-namenode-0 hdfs dfs -chmod -R 775 /user/clickhouse 
 ```
 
-Use following command to open a client terminal to server
+We can use public clickhouse client to connect to byconity. If you don't have clickhouse on your system, you can quickly download it by:
+
+On MacOS:
+
+```
+curl -O 'https://builds.clickhouse.com/master/macos/clickhouse' && chmod a+x ./clickhouse
+```
+
+On Linux:
+
+```
+curl -O 'https://builds.clickhouse.com/master/amd64/clickhouse' && chmod a+x clickhouse
+```
+
+Then connect to server by:
 
 ```s
-docker run -it --network byconity_network -v "`pwd`/byconity/server.yml:/client.yml" hub.byted.org/clickhouse/byconity:2.0.0.27 clickhouse-client -C client.yml --host 10.5.0.4
+./clickhouse client --port 52145
 ```
 
 We can use following queries to create a database, create a table, insert some data to table, and query from it:
@@ -167,3 +189,49 @@ Each table will have an UUID, and the path on hdfs is `{disk_root}/{table_uuid}`
 
 ![Data part file on disk](images/hdfs_file.png)
 
+## SSB benchmark
+
+
+## Clickbench
+
+The minimum requirement to run Clickbench is each container has 2CPU and 8GB RAM. If you're using MacOS, you should config the Docker VM to have 4CPU and 8GB RAM. To have good performance, each container (except foudationdb) should has at least 4CPU and 16GB RAM.
+
+Clickbench is a benchmark by ClickHouse, which contains 1 single flat table and the dataset of 100M rows. The dataset is obfuscated to have same data distribution as Yandex's production data. More about the benchmark [here](https://github.com/ClickHouse/ClickBench).
+
+To create the table and import data to it, from current directory run:
+
+```
+./byconity/clickbench_import.sh
+```
+
+The script will create the table, download the dataset, decompress it and insert into byconity via clickhouse client. When the importing done, you can test with a simple query:
+
+```sql
+SELECT count()
+FROM test.hits
+
+Query id: 08970ad5-2753-40bc-9be2-e4bb7873f3a3
+
+┌──count()─┐
+│ 99997497 │
+└──────────┘
+
+1 row in set. Elapsed: 11.161 sec. Processed 100.00 million rows, 199.99 MB (8.96 million rows/s., 17.92 MB/s.)
+```
+
+Notes that in the first run, data need to be pulled from hdfs, so it takes long time. In the consequence run, the local cache hit and the execution is much faster:
+
+```sql
+SELECT count()
+FROM hits
+
+Query id: 1f6088a0-f9c6-4c23-a4be-b1c3b1b8cb6c
+
+┌──count()─┐
+│ 99997497 │
+└──────────┘
+
+1 row in set. Elapsed: 1.545 sec. Processed 100.00 million rows, 199.99 MB (64.71 million rows/s., 129.43 MB/s.)
+```
+
+You can try to play with the table with the query provided in `dataset/clickbench.sql`.

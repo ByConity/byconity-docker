@@ -11,7 +11,7 @@ services:
     ports:
       - 9870:9870
     volumes:
-      - ./hdfs:${HADOOP_CONF_DIR}:ro
+      - ./byconity/hdfs:${HADOOP_CONF_DIR}:ro
       - /var/log/hadoop
       - /data1
       - /data2
@@ -32,7 +32,7 @@ services:
     environment:
       - HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
     volumes:
-      - ./hdfs:${HADOOP_CONF_DIR}:ro
+      - ./byconity/hdfs:${HADOOP_CONF_DIR}:ro
       - /var/log/hadoop
       - /data1
       - /data2
@@ -66,8 +66,8 @@ services:
       - hdfs
     volumes:
       - "./byconity/tso.yml:/tso.yml"
-      - "./fdb/fdbcli:/fdbcli"
-      - "./fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
+      - "./byconity/fdb/fdbcli:/fdbcli"
+      - "./byconity/fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
     # evironment:
     container_name: tso-0
     healthcheck:
@@ -97,8 +97,8 @@ services:
     volumes:
       - "./byconity/server.yml:/server.yml"
       - "./byconity/users.yml:/users.yml"
-      - "./fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
-      - "./fdb/fdbcli:/fdbcli"
+      - "./byconity/fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
+      - "./byconity/fdb/fdbcli:/fdbcli"
     healthcheck:
       test:
         - CMD
@@ -122,8 +122,8 @@ services:
     volumes:
       - "./byconity/worker-write.yml:/worker-write.yml"
       - "./byconity/users.yml:/users.yml"
-      - "./fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
-      - "./fdb/fdbcli:/fdbcli"
+      - "./byconity/fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
+      - "./byconity/fdb/fdbcli:/fdbcli"
     healthcheck:
       test:
         - CMD
@@ -147,8 +147,8 @@ services:
     volumes:
       - "./byconity/worker-default.yml:/worker-default.yml"
       - "./byconity/users.yml:/users.yml"
-      - "./fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
-      - "./fdb/fdbcli:/fdbcli"
+      - "./byconity/fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
+      - "./byconity/fdb/fdbcli:/fdbcli"
     healthcheck:
       test:
         - CMD
@@ -172,8 +172,8 @@ services:
     container_name: daemon-manager-0
     volumes:
       - "./byconity/daemon-manager.yml:/daemon-manager.yml"
-      - "./fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
-      - "./fdb/fdbcli:/fdbcli"
+      - "./byconity/fdb/docker.cluster:/etc/byconity/fdb/fdb.cluster"
+      - "./byconity/fdb/fdbcli:/fdbcli"
     healthcheck:
       test:
         - CMD

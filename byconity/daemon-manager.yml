@@ -206,4 +206,4 @@ daemon_manager:
       interval: 3000
       disable: 0
 
-hdfs_nnproxy: "hdfs://10.5.0.31:9000"
+hdfs_addr: "hdfs://10.5.0.31:9000"
