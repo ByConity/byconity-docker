@@ -1,3 +1,14 @@
+# Table of Contents
+1. [Prerequisite](#prerequisite)
+2. [Cluster architecture](#cluster-architecture)
+3. [Bring the cluster up](#bring-the-cluster-up)
+3. [Trying some basic queries](#trying-some-basic-queries)
+5. [A quick look into how the data is stored](#a-quick-look-into-how-the-data-is-stored)
+    + [Metadata](#metadata)
+    + [Remote data](#remote-data)
+6. [SSB benchmark](#ssb-benchmark)
+7. [Clickbench](#clickbench)
+
 ## Prerequisite
 
 Before running, make sure your system has following prerequisite:
