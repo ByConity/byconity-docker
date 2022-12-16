@@ -191,8 +191,105 @@ Each table will have an UUID, and the path on hdfs is `{disk_root}/{table_uuid}`
 
 ## SSB benchmark
 
+The minimum requirement to run SSB 1G is each container has 1CPU and 1GB RAM. If you're using MacOS, you should config the Docker VM to have 2CPU and 8GB RAM.
+
+SSB stand for *Star Schema Benchmark*. It contains four tables in a star-schema and one single flat table. The data is generated from a software. The total amount of data (a.k.a *scale*) can be chosen when generating. Scale 1 generates 6 million rows, while scale 1000 generates 6 billion rows. In this example, we use scale 1. To change the scale, you can change the generation command in the script.
+
+To create the table and import data to it, from current directory run:
+
+```
+./byconity/ssb_import.sh
+```
+
+The script will create the table, generate the data, import it into byconity via clickhouse client, then create the flat table. When the importing done, you play with query in `datasets/ssb.sql`
+
+```sql
+SELECT
+    sum(LO_REVENUE),
+    toYear(LO_ORDERDATE) AS year,
+    P_BRAND
+FROM lineorder_flat
+WHERE (P_BRAND = 'MFGR#2239') AND (S_REGION = 'EUROPE')
+GROUP BY
+    year,
+    P_BRAND
+ORDER BY
+    year ASC,
+    P_BRAND ASC
+
+Query id: c8ed5cef-57dd-4d0e-adf8-ebea5d37d34e
+
+┌─sum(LO_REVENUE)─┬─year─┬─P_BRAND───┐
+│       732065331 │ 1992 │ MFGR#2239 │
+│       665355617 │ 1993 │ MFGR#2239 │
+│       733858503 │ 1994 │ MFGR#2239 │
+│       622904542 │ 1995 │ MFGR#2239 │
+│       628615052 │ 1996 │ MFGR#2239 │
+│       784212754 │ 1997 │ MFGR#2239 │
+│       409670997 │ 1998 │ MFGR#2239 │
+└─────────────────┴──────┴───────────┘
+
+7 rows in set. Elapsed: 0.270 sec. Processed 6.00 million rows, 64.56 MB (22.19 million rows/s., 238.76 MB/s.)
+```
+
+When testing the star schema, you may also try the cost-based optimizer by `set enable_optimizer=1` to get better performance in join queries:
+
+Without CBO:
+
+```sql
+SELECT
+    C_CITY,
+    S_CITY,
+    toYear(LO_ORDERDATE) AS d_year,
+    sum(LO_REVENUE) AS revenue
+FROM ssb.customer, ssb.lineorder, ssb.supplier
+WHERE (LO_CUSTKEY = C_CUSTKEY) AND (LO_SUPPKEY = S_SUPPKEY) AND (C_NATION = 'UNITED STATES') AND (S_NATION = 'UNITED STATES') AND (d_year >= 1992) AND (d_year <= 1997)
+GROUP BY
+    C_CITY,
+    S_CITY,
+    d_year
+ORDER BY
+    d_year ASC,
+    revenue DESC
+FORMAT `Null`
+
+Query id: 03cc9993-26f3-46b9-93fc-b108245d6d14
+
+Ok.
+
+0 rows in set. Elapsed: 46.525 sec. Processed 6.03 million rows, 84.22 MB (129.68 thousand rows/s., 1.81 MB/s.)
+```
+
+With CBO:
+
+```sql
+SELECT
+    C_CITY,
+    S_CITY,
+    toYear(LO_ORDERDATE) AS d_year,
+    sum(LO_REVENUE) AS revenue
+FROM ssb.customer, ssb.lineorder, ssb.supplier
+WHERE (LO_CUSTKEY = C_CUSTKEY) AND (LO_SUPPKEY = S_SUPPKEY) AND (C_NATION = 'UNITED STATES') AND (S_NATION = 'UNITED STATES') AND (d_year >= 1992) AND (d_year <= 1997)
+GROUP BY
+    C_CITY,
+    S_CITY,
+    d_year
+ORDER BY
+    d_year ASC,
+    revenue DESC
+FORMAT `Null`
+SETTINGS enable_optimizer = 1
+
+Query id: a6f92e6b-be44-4c47-b0e2-fa58f806bdec
+
+Ok.
+
+0 rows in set. Elapsed: 0.974 sec. 
+```
 
 ## Clickbench
+
+**Notes**: clickbench dataset size is about 45GB raw data and 14 (before optimize) or 11 (after optimize) in ByConity. Make sure you have enough resource before running
 
 The minimum requirement to run Clickbench is each container has 2CPU and 8GB RAM. If you're using MacOS, you should config the Docker VM to have 4CPU and 8GB RAM. To have good performance, each container (except foudationdb) should has at least 4CPU and 16GB RAM.
 
