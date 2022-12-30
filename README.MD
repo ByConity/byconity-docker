@@ -54,18 +54,18 @@ Wait until all containers are ready. We can use following commands to check the 
 
 ```s
 # return 1 indicates that server is working properly
-curl '127.0.0.1:21557/?query=select%20count()%20from%20system.one'
+curl '127.0.0.1:21557/?query=SELECT%20count()%20FROM%20system.one'
 # return 1 indicates that read worker is working properly and server can connect to it
-curl '127.0.0.1:21557/?query=select%20count()%20from%20cnch(`vw_default`,system,one)'
+curl '127.0.0.1:21557/?query=SELECT%20count()%20FROM%20cnch(`vw_default`,system,one)'
 # return 1 indicates that write worker is working properly and server can connect to it
-curl '127.0.0.1:21557/?query=select%20count()%20from%20cnch(`vw_write`,system,one)'
+curl '127.0.0.1:21557/?query=SELECT%20count()%20FROM%20cnch(`vw_write`,system,one)'
 ```
 
 Check the tcp protocol by sending a simple query.
 
 ```s
 # return 10 indicates that tcp server is working properly
-docker exec -it server-0 clickhouse-client -C server.yml --host server-0 --query "SELECT count() FROM numbers(10)"
+docker exec -it server-0 clickhouse-client -C server.yml --host 10.5.0.4 --query "SELECT count() FROM numbers(10)"
 ```
 
 ## Trying some basic queries
@@ -73,10 +73,10 @@ docker exec -it server-0 clickhouse-client -C server.yml --host server-0 --query
 Internally, byconity read/write to hdfs with username `clickhouse` (and data is stored in `/user/clickhouse/`), which is not created by default when starting hadoop cluster. We can use following commands to create the user `clickhouse` on hdfs.
 
 ```s
-docker exec hdfs-namenode hdfs dfs -mkdir /user
-docker exec hdfs-namenode hdfs dfs -mkdir /user/clickhouse
-docker exec hdfs-namenode hdfs dfs -chown clickhouse /user/clickhouse
-docker exec hdfs-namenode hdfs dfs -chmod -R 775 /user/clickhouse 
+docker exec hdfs-namenode-0 hdfs dfs -mkdir /user
+docker exec hdfs-namenode-0 hdfs dfs -mkdir /user/clickhouse
+docker exec hdfs-namenode-0 hdfs dfs -chown clickhouse /user/clickhouse
+docker exec hdfs-namenode-0 hdfs dfs -chmod -R 775 /user/clickhouse 
 ```
 
 We can use public clickhouse client to connect to byconity. If you don't have clickhouse on your system, you can quickly download it by:
@@ -112,6 +112,8 @@ SELECT * FROM events ORDER BY id;
 If the system is working correctly, the select query should show a similar result as bellow:
 
 ```sql
+10.5.0.4 :) SELECT * FROM events ORDER BY id;
+
 SELECT *
 FROM events
 ORDER BY id ASC
@@ -340,49 +342,4 @@ Query id: 1f6088a0-f9c6-4c23-a4be-b1c3b1b8cb6c
 1 row in set. Elapsed: 1.545 sec. Processed 100.00 million rows, 199.99 MB (64.71 million rows/s., 129.43 MB/s.)
 ```
 
-## SSB benchmark
-
-
-## Clickbench
-
-The minimum requirement to run Clickbench is each container has 2CPU and 8GB RAM. If you're using MacOS, you should config the Docker VM to have 4CPU and 8GB RAM. To have good performance, each container (except foudationdb) should has at least 4CPU and 16GB RAM.
-
-Clickbench is a benchmark by ClickHouse, which contains 1 single flat table and the dataset of 100M rows. The dataset is obfuscated to have same data distribution as Yandex's production data. More about the benchmark [here](https://github.com/ClickHouse/ClickBench).
-
-To create the table and import data to it, from current directory run:
-
-```
-./byconity/clickbench_import.sh
-```
-
-The script will create the table, download the dataset, decompress it and insert into byconity via clickhouse client. When the importing done, you can test with a simple query:
-
-```sql
-SELECT count()
-FROM test.hits
-
-Query id: 08970ad5-2753-40bc-9be2-e4bb7873f3a3
-
-┌──count()─┐
-│ 99997497 │
-└──────────┘
-
-1 row in set. Elapsed: 11.161 sec. Processed 100.00 million rows, 199.99 MB (8.96 million rows/s., 17.92 MB/s.)
-```
-
-Notes that in the first run, data need to be pulled from hdfs, so it takes long time. In the consequence run, the local cache hit and the execution is much faster:
-
-```sql
-SELECT count()
-FROM hits
-
-Query id: 1f6088a0-f9c6-4c23-a4be-b1c3b1b8cb6c
-
-┌──count()─┐
-│ 99997497 │
-└──────────┘
-
-1 row in set. Elapsed: 1.545 sec. Processed 100.00 million rows, 199.99 MB (64.71 million rows/s., 129.43 MB/s.)
-```
-
-You can try to play with the table with the query provided in `datasets/clickbench.sql`.
+You can try to play with the table with the query provided in `dataset/clickbench.sql`.

@@ -1,4 +1,0 @@
-*.tbl
-**/*.tbl
-clickhouse
-.vscode
