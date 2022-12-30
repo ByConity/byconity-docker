@@ -48,7 +48,7 @@ services:
       - fdb
       - hdfs
     volumes:
-      - "./byconity-simple-cluster/:/config/:ro"
+      - "./byconity-multiworkers-cluster/:/config/:ro"
       - "./fdb/:/etc/byconity/fdb/"
     # evironment:
     container_name: tso-0
@@ -57,6 +57,26 @@ services:
         - CMD
         - curl
         - "tso-0:18845/status"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    cap_add:
+      - SYS_PTRACE
+
+  resource-manager:
+    image: duclecanh/byconity:0.1.0-beta
+    command: bash -c "resource-manager --config-file /config/resource-manager.yml"
+    depends_on:
+      - tso
+    volumes:
+      - "./byconity-multiworkers-cluster/:/config/:ro"
+      - "./fdb/:/etc/byconity/fdb/"
+    container_name: resource-manager-0
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - "resource-manager-0:28989/status"
       interval: 10s
       timeout: 5s
       retries: 5
@@ -74,7 +94,7 @@ services:
       - "21557:21557"
     container_name: server-0
     volumes:
-      - "./byconity-simple-cluster/:/config/:ro"
+      - "./byconity-multiworkers-cluster/:/config/:ro"
       - "./fdb/:/etc/byconity/fdb/"
     healthcheck:
       test:
@@ -89,12 +109,12 @@ services:
 
   worker-write:
     image: duclecanh/byconity:0.1.0-beta
-    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && clickhouse-server --config-file /config/worker.yml"
+    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && VIRTUAL_WAREHOUSE_ID=vw_write WORKER_GROUP_ID=wg_write WORKER_ID=w0 clickhouse-server --config-file /config/worker.yml"
     depends_on:
       - server
     container_name: worker-write-0
     volumes:
-      - "./byconity-simple-cluster/:/config/:ro"
+      - "./byconity-multiworkers-cluster/:/config/:ro"
       - "./fdb/:/etc/byconity/fdb/"
     healthcheck:
       test:
@@ -107,14 +127,14 @@ services:
     cap_add:
       - SYS_PTRACE
 
-  worker-default:
+  worker-default-0:
     image: duclecanh/byconity:0.1.0-beta
-    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && clickhouse-server --config-file /config/worker.yml"
+    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && VIRTUAL_WAREHOUSE_ID=vw_default WORKER_GROUP_ID=wg_default WORKER_ID=r0 clickhouse-server --config-file /config/worker.yml"
     depends_on:
       - server
     container_name: worker-default-0
     volumes:
-      - "./byconity-simple-cluster/:/config/:ro"
+      - "./byconity-multiworkers-cluster/:/config/:ro"
       - "./fdb/:/etc/byconity/fdb/"
     healthcheck:
       test:
@@ -127,6 +147,47 @@ services:
     cap_add:
       - SYS_PTRACE
 
+  worker-default-1:
+    image: duclecanh/byconity:0.1.0-beta
+    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && VIRTUAL_WAREHOUSE_ID=vw_default WORKER_GROUP_ID=wg_default WORKER_ID=r1 clickhouse-server --config-file /config/worker.yml"
+    depends_on:
+      - server
+    container_name: worker-default-1
+    volumes:
+      - "./byconity-multiworkers-cluster/:/config/:ro"
+      - "./fdb/:/etc/byconity/fdb/"
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - "worker-default-1:21557/?query=SELECT%201"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    cap_add:
+      - SYS_PTRACE
+
+  worker-default-2:
+    image: duclecanh/byconity:0.1.0-beta
+    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && VIRTUAL_WAREHOUSE_ID=vw_default WORKER_GROUP_ID=wg_default WORKER_ID=r2 clickhouse-server --config-file /config/worker.yml"
+    depends_on:
+      - server
+    container_name: worker-default-2
+    volumes:
+      - "./byconity-multiworkers-cluster/:/config/:ro"
+      - "./fdb/:/etc/byconity/fdb/"
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - "worker-default-2:21557/?query=SELECT%201"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    cap_add:
+      - SYS_PTRACE
+
+
   daemon-manager:
     image: duclecanh/byconity:0.1.0-beta
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && daemon-manager --config-file ./config/daemon-manager.yml"
@@ -134,12 +195,12 @@ services:
       - server
     container_name: daemon-manager-0
     volumes:
-      - "./byconity-simple-cluster/:/config/:ro"
+      - "./byconity-multiworkers-cluster/:/config/:ro"
     healthcheck:
       test:
         - CMD
         - curl
-        - "daemon-manager-0:17553/status"
+        - daemon-manager-0:17553/status"
       interval: 10s
       timeout: 5s
       retries: 5 
