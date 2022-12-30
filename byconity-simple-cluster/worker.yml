@@ -13,7 +13,8 @@ exchange_port: 47447
 exchange_status_port: 60611
 interserver_http_port: 30491
 listen_host: "0.0.0.0"
-cnch_type: server
+cnch_type: worker
+vw_name: vw_default
 max_connections: 4096
 keep_alive_timeout: 3
 max_concurrent_queries: 100
@@ -21,7 +22,7 @@ uncompressed_cache_size: 8589934592
 mark_cache_size: 5368709120
 path: /var/byconity/
 tmp_path: /var/byconity/tmp_data/
-users_config: users.yml
+users_config: /config/users.yml
 default_profile: default
 default_database: default
 timezone: Asia/Shanghai
@@ -44,7 +45,7 @@ service_discovery:
     service: cnch-server
     headless_service: cnch-server-headless
     node:
-      host: 10.5.0.4
+      host: server-0
       hostname: server
       ports:
         port:
@@ -74,7 +75,7 @@ service_discovery:
     service: cnch-tso
     headless_service: cnch-tso-headless
     node:
-      host: 10.5.0.3
+      host: tso-0
       hostname: tso
       ports:
         port:
@@ -89,7 +90,7 @@ service_discovery:
     service: cnch-daemonmanager
     headless_service: cnch-daemonmanager-headless
     node:
-      host: 10.5.0.7
+      host: daemon-manager-0
       hostname: daemon-manager
       ports:
         port:
@@ -100,58 +101,58 @@ service_discovery:
     psm: data.cnch.vw
     node:
     -
-      host: 10.5.0.5
+      host: worker-write-0
       hostname: worker-write
       ports:
         port:
         -
           name: PORT2
-          value: 13761
+          value: 21557
         -
           name: PORT1
-          value: 24637
+          value: 30605
         -
           name: PORT0
-          value: 36279
+          value: 52145
         -
           name: PORT4
-          value: 64869
+          value: 27651
         -
           name: PORT3
-          value: 56875
+          value: 45443
         -
           name: PORT5
-          value: 25835
+          value: 47447
         -
           name: PORT6
-          value: 48479
+          value: 60611
       vw_name: vw_write
     -
-      host: 10.5.0.6
+      host: worker-default-0
       hostname: worker-default
       ports:
         port:
         -
           name: PORT2
-          value: 50993
+          value: 21557
         -
           name: PORT1
-          value: 53363
+          value: 30605
         -
           name: PORT0
-          value: 36821
+          value: 52145
         -
           name: PORT4
-          value: 50925
+          value: 27651
         -
           name: PORT3
-          value: 36159
+          value: 45443
         -
           name: PORT5
-          value: 44049
+          value: 47447
         -
           name: PORT6
-          value: 18991
+          value: 60611
       vw_name: vw_default
 catalog:
   name_space: default
@@ -162,48 +163,24 @@ catalog_service:
     cluster_file: /etc/byconity/fdb/fdb.cluster
 storage_configuration:
   disks:
-    server_hdfs_disk:
-      path: /user/clickhouse//
+    hdfs_disk:
+      path: /user/clickhouse/
       type: bytehdfs
-    server_local_0:
+    local_disk:
       path: /var/byconity/data/
       type: local
   policies:
     default:
       volumes:
         hdfs:
-          default: server_hdfs_disk
-          disk: server_hdfs_disk
+          default: hdfs_disk
+          disk: hdfs_disk
         local:
-          default: server_local_0
-          disk: server_local_0
-daemon_manager:
-  port: 17553
-  daemon_jobs:
-    job:
-    -
-      name: PART_GC
-      interval: 10000
-      disable: 0
-    -
-      name: PART_MERGE
-      interval: 10000
-      disable: 0
-    -
-      name: CONSUMER
-      interval: 10000
-      disable: 0
-    -
-      name: GLOBAL_GC
-      interval: 5000
-      disable: 0
-    -
-      name: PART_CLUSTERING
-      interval: 30000
-      disable: 0
-    -
-      name: DEDUP_WORKER
-      interval: 3000
-      disable: 0
-
-hdfs_addr: "hdfs://10.5.0.31:9000"
+          default: local_disk
+          disk: local_disk
+hdfs_addr: "hdfs://hdfs-namenode:9000"
+query_log:
+  database: system
+  table: query_log
+  flush_interval_milliseconds: 15000
+  partition_by: event_date

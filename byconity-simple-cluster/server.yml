@@ -5,16 +5,15 @@ logger:
   testlog: /var/byconity/test.log
   size: 1000M
   count: 10
-http_port: 50993
-rpc_port: 53363
-tcp_port: 36821
-ha_tcp_port: 22163
-exchange_port: 44049
-exchange_status_port: 18991
-interserver_http_port: 43303
+http_port: 21557
+rpc_port: 30605
+tcp_port: 52145
+ha_tcp_port: 26247
+exchange_port: 47447
+exchange_status_port: 60611
+interserver_http_port: 30491
 listen_host: "0.0.0.0"
-cnch_type: worker
-vw_name: vw_default
+cnch_type: server
 max_connections: 4096
 keep_alive_timeout: 3
 max_concurrent_queries: 100
@@ -22,7 +21,7 @@ uncompressed_cache_size: 8589934592
 mark_cache_size: 5368709120
 path: /var/byconity/
 tmp_path: /var/byconity/tmp_data/
-users_config: users.yml
+users_config: /config/users.yml
 default_profile: default
 default_database: default
 timezone: Asia/Shanghai
@@ -42,10 +41,8 @@ service_discovery:
   cache_timeout: 5
   server:
     psm: data.cnch.server
-    service: cnch-server
-    headless_service: cnch-server-headless
     node:
-      host: 10.5.0.4
+      host: server-0
       hostname: server
       ports:
         port:
@@ -72,10 +69,8 @@ service_discovery:
           value: 60611
   tso:
     psm: data.cnch.tso
-    service: cnch-tso
-    headless_service: cnch-tso-headless
     node:
-      host: 10.5.0.3
+      host: tso-0
       hostname: tso
       ports:
         port:
@@ -87,10 +82,8 @@ service_discovery:
           value: 9181
   daemon_manager:
     psm: data.cnch.daemon_manager
-    service: cnch-daemonmanager
-    headless_service: cnch-daemonmanager-headless
     node:
-      host: 10.5.0.7
+      host: daemon-manager-0
       hostname: daemon-manager
       ports:
         port:
@@ -101,58 +94,58 @@ service_discovery:
     psm: data.cnch.vw
     node:
     -
-      host: 10.5.0.5
+      host: worker-write-0
       hostname: worker-write
       ports:
         port:
         -
           name: PORT2
-          value: 13761
+          value: 21557
         -
           name: PORT1
-          value: 24637
+          value: 30605
         -
           name: PORT0
-          value: 36279
+          value: 52145
         -
           name: PORT4
-          value: 64869
+          value: 27651
         -
           name: PORT3
-          value: 56875
+          value: 45443
         -
           name: PORT5
-          value: 25835
+          value: 47447
         -
           name: PORT6
-          value: 48479
+          value: 60611
       vw_name: vw_write
     -
-      host: 10.5.0.6
+      host: worker-default-0
       hostname: worker-default
       ports:
         port:
         -
           name: PORT2
-          value: 50993
+          value: 21557
         -
           name: PORT1
-          value: 53363
+          value: 30605
         -
           name: PORT0
-          value: 36821
+          value: 52145
         -
           name: PORT4
-          value: 50925
+          value: 27651
         -
           name: PORT3
-          value: 36159
+          value: 45443
         -
           name: PORT5
-          value: 44049
+          value: 47447
         -
           name: PORT6
-          value: 18991
+          value: 60611
       vw_name: vw_default
 catalog:
   name_space: default
@@ -163,24 +156,34 @@ catalog_service:
     cluster_file: /etc/byconity/fdb/fdb.cluster
 storage_configuration:
   disks:
-    server_hdfs_disk:
-      path: /user/clickhouse//
+    hdfs_disk:
+      path: /user/clickhouse/
       type: bytehdfs
-    server_local_0:
+    local_disk:
       path: /var/byconity/data/
       type: local
   policies:
     default:
       volumes:
         hdfs:
-          default: server_hdfs_disk
-          disk: server_hdfs_disk
+          default: hdfs_disk
+          disk: hdfs_disk
         local:
-          default: server_local_0
-          disk: server_local_0
-hdfs_addr: "hdfs://10.5.0.31:9000"
+          default: local_disk
+          disk: local_disk
+hdfs_addr: "hdfs://hdfs-namenode:9000"
+cnch_kafka_log:
+  database: cnch_system
+  table: cnch_kafka_log
+  flush_max_row_count: 10000
+  flush_interval_milliseconds: 7500
 query_log:
   database: system
   table: query_log
   flush_interval_milliseconds: 15000
   partition_by: event_date
+part_allocation_algorithm: 1
+consistent_hash_ring:
+  num_replicas: 16
+  num_probes: 21
+  load_factor: 1.3
