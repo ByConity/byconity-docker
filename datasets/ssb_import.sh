@@ -3,15 +3,15 @@
 ./clickhouse client --time --query "CREATE DATABASE ssb"
 ./clickhouse client --database ssb --multiquery --time < datasets/ssb_ddl.sql
 
-# cd datasets
-# rm -rf *.tbl
-# # replace 1 with 10, 100, or 1000 bigger data
-# if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-#     ./dbgen -s 10 -T a
-# elif [[ "$OSTYPE" == "darwin"* ]]; then
-#     ./dbgen-mac -s 10 -T a
-# fi
-# cd ..
+cd datasets
+rm -rf *.tbl
+# replace 1 with 10, 100, or 1000 bigger data
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    ./dbgen -s 10 -T a
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    ./dbgen-mac -s 10 -T a
+fi
+cd ..
 
 echo "Create table and import data"
 ./clickhouse client --database ssb --time --query "INSERT INTO customer FORMAT CSV" < datasets/customer.tbl
