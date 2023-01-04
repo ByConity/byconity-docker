@@ -65,7 +65,7 @@ Check the tcp protocol by sending a simple query.
 
 ```s
 # return 10 indicates that tcp server is working properly
-docker exec -it server-0 clickhouse-client -C server.yml --host 10.5.0.4 --query "SELECT count() FROM numbers(10)"
+docker exec -it server-0 clickhouse-client -C server.yml --host server-0 --query "SELECT count() FROM numbers(10)"
 ```
 
 ## Trying some basic queries
@@ -73,10 +73,10 @@ docker exec -it server-0 clickhouse-client -C server.yml --host 10.5.0.4 --query
 Internally, byconity read/write to hdfs with username `clickhouse` (and data is stored in `/user/clickhouse/`), which is not created by default when starting hadoop cluster. We can use following commands to create the user `clickhouse` on hdfs.
 
 ```s
-docker exec hdfs-namenode-0 hdfs dfs -mkdir /user
-docker exec hdfs-namenode-0 hdfs dfs -mkdir /user/clickhouse
-docker exec hdfs-namenode-0 hdfs dfs -chown clickhouse /user/clickhouse
-docker exec hdfs-namenode-0 hdfs dfs -chmod -R 775 /user/clickhouse 
+docker exec hdfs-namenode hdfs dfs -mkdir /user
+docker exec hdfs-namenode hdfs dfs -mkdir /user/clickhouse
+docker exec hdfs-namenode hdfs dfs -chown clickhouse /user/clickhouse
+docker exec hdfs-namenode hdfs dfs -chmod -R 775 /user/clickhouse 
 ```
 
 We can use public clickhouse client to connect to byconity. If you don't have clickhouse on your system, you can quickly download it by:
@@ -112,8 +112,6 @@ SELECT * FROM events ORDER BY id;
 If the system is working correctly, the select query should show a similar result as bellow:
 
 ```sql
-10.5.0.4 :) SELECT * FROM events ORDER BY id;
-
 SELECT *
 FROM events
 ORDER BY id ASC
