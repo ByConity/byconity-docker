@@ -70,8 +70,8 @@ services:
       - tso
       - hdfs
     ports:
-      - "52145:52145"
-      - "21557:21557"
+      - "9000:52145"
+      - "8123:21557"
     container_name: server-0
     volumes:
       - "./byconity-simple-cluster/:/config/:ro"

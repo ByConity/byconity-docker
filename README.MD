@@ -50,22 +50,15 @@ From the current directory, run:
 docker-compose up
 ```
 
-Wait until all containers are ready. We can use following commands to check the readiness of byconity components: 
+Wait until all containers are ready. By default, docker exposes the tcp port at 9000 and http port at 8123. We can use following commands to check the readiness of byconity components: 
 
 ```s
 # return 1 indicates that server is working properly
-curl '127.0.0.1:21557/?query=select%20count()%20from%20system.one'
+curl '127.0.0.1:8123/?query=select%20count()%20from%20system.one'
 # return 1 indicates that read worker is working properly and server can connect to it
-curl '127.0.0.1:21557/?query=select%20count()%20from%20cnch(`vw_default`,system,one)'
+curl '127.0.0.1:8123/?query=select%20count()%20from%20cnch(`vw_default`,system,one)'
 # return 1 indicates that write worker is working properly and server can connect to it
-curl '127.0.0.1:21557/?query=select%20count()%20from%20cnch(`vw_write`,system,one)'
-```
-
-Check the tcp protocol by sending a simple query.
-
-```s
-# return 10 indicates that tcp server is working properly
-docker exec -it server-0 clickhouse-client -C server.yml --host server-0 --query "SELECT count() FROM numbers(10)"
+curl '127.0.0.1:8123/?query=select%20count()%20from%20cnch(`vw_write`,system,one)'
 ```
 
 ## Trying some basic queries
@@ -96,7 +89,7 @@ curl -O 'https://builds.clickhouse.com/master/amd64/clickhouse' && chmod a+x cli
 Then connect to server by:
 
 ```s
-./clickhouse client --port 52145
+./clickhouse client
 ```
 
 We can use following queries to create a database, create a table, insert some data to table, and query from it:

@@ -1,7 +1,7 @@
 #!/bin/bash
-./clickhouse client --host 127.0.0.1 --port 52145 --time --query "DROP DATABASE IF EXISTS ssb"
-./clickhouse client --host 127.0.0.1 --port 52145 --time --query "CREATE DATABASE ssb"
-./clickhouse client --host 127.0.0.1 --port 52145 --database ssb --multiquery --time < datasets/ssb_ddl.sql
+./clickhouse client --time --query "DROP DATABASE IF EXISTS ssb"
+./clickhouse client --time --query "CREATE DATABASE ssb"
+./clickhouse client --database ssb --multiquery --time < datasets/ssb_ddl.sql
 
 # cd datasets
 # rm -rf *.tbl
@@ -14,10 +14,10 @@
 # cd ..
 
 echo "Create table and import data"
-./clickhouse client --port 52145 --database ssb --time --query "INSERT INTO customer FORMAT CSV" < datasets/customer.tbl
-./clickhouse client --port 52145 --database ssb --time --query "INSERT INTO part FORMAT CSV" < datasets/part.tbl
-./clickhouse client --port 52145 --database ssb --time --query "INSERT INTO supplier FORMAT CSV" < datasets/supplier.tbl
-./clickhouse client --port 52145 --database ssb --time --query "INSERT INTO lineorder FORMAT CSV" < datasets/lineorder.tbl
+./clickhouse client --database ssb --time --query "INSERT INTO customer FORMAT CSV" < datasets/customer.tbl
+./clickhouse client --database ssb --time --query "INSERT INTO part FORMAT CSV" < datasets/part.tbl
+./clickhouse client --database ssb --time --query "INSERT INTO supplier FORMAT CSV" < datasets/supplier.tbl
+./clickhouse client --database ssb --time --query "INSERT INTO lineorder FORMAT CSV" < datasets/lineorder.tbl
 echo "Create flat table"
-./clickhouse client --port 52145 --enable_optimizer 1 --database ssb --multiquery --time < datasets/ssb_flat_table.sql
+./clickhouse client --database ssb --multiquery --time < datasets/ssb_flat_table.sql
 echo "Done!"
