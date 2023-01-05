@@ -42,7 +42,7 @@ services:
 
 # byconity:
   tso:
-    image: duclecanh/byconity:0.1.0-beta
+    image: byconity/byconity:0.1.0-beta
     command: bash -c "/etc/byconity/fdb/fdbcli -C /etc/byconity/fdb/fdb.cluster --exec \"configure new single ssd\"; tso-server --config-file /config/tso.yml"
     depends_on:
       - fdb
@@ -64,7 +64,7 @@ services:
       - SYS_PTRACE
 
   server:
-    image: duclecanh/byconity:0.1.0-beta
+    image: byconity/byconity:0.1.0-beta
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 tso-0:18845/status && clickhouse-server --config-file /config/server.yml"
     depends_on:
       - tso
@@ -88,7 +88,7 @@ services:
       - SYS_PTRACE
 
   worker-write:
-    image: duclecanh/byconity:0.1.0-beta
+    image: byconity/byconity:0.1.0-beta
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && clickhouse-server --config-file /config/worker.yml"
     depends_on:
       - server
@@ -108,7 +108,7 @@ services:
       - SYS_PTRACE
 
   worker-default:
-    image: duclecanh/byconity:0.1.0-beta
+    image: byconity/byconity:0.1.0-beta
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && clickhouse-server --config-file /config/worker.yml"
     depends_on:
       - server
@@ -128,7 +128,7 @@ services:
       - SYS_PTRACE
 
   daemon-manager:
-    image: duclecanh/byconity:0.1.0-beta
+    image: byconity/byconity:0.1.0-beta
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && daemon-manager --config-file ./config/daemon-manager.yml"
     depends_on:
       - server

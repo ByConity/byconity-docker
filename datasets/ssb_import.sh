@@ -7,9 +7,9 @@ cd datasets
 rm -rf *.tbl
 # replace 1 with 10, 100, or 1000 bigger data
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    ./dbgen -s 10 -T a
+    ./dbgen -s 1 -T a
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    ./dbgen-mac -s 10 -T a
+    ./dbgen-mac -s 1 -T a
 fi
 cd ..
 
