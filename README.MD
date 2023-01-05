@@ -333,49 +333,4 @@ Query id: 1f6088a0-f9c6-4c23-a4be-b1c3b1b8cb6c
 1 row in set. Elapsed: 1.545 sec. Processed 100.00 million rows, 199.99 MB (64.71 million rows/s., 129.43 MB/s.)
 ```
 
-## SSB benchmark
-
-
-## Clickbench
-
-The minimum requirement to run Clickbench is each container has 2CPU and 8GB RAM. If you're using MacOS, you should config the Docker VM to have 4CPU and 8GB RAM. To have good performance, each container (except foudationdb) should has at least 4CPU and 16GB RAM.
-
-Clickbench is a benchmark by ClickHouse, which contains 1 single flat table and the dataset of 100M rows. The dataset is obfuscated to have same data distribution as Yandex's production data. More about the benchmark [here](https://github.com/ClickHouse/ClickBench).
-
-To create the table and import data to it, from current directory run:
-
-```
-./byconity/clickbench_import.sh
-```
-
-The script will create the table, download the dataset, decompress it and insert into byconity via clickhouse client. When the importing done, you can test with a simple query:
-
-```sql
-SELECT count()
-FROM test.hits
-
-Query id: 08970ad5-2753-40bc-9be2-e4bb7873f3a3
-
-┌──count()─┐
-│ 99997497 │
-└──────────┘
-
-1 row in set. Elapsed: 11.161 sec. Processed 100.00 million rows, 199.99 MB (8.96 million rows/s., 17.92 MB/s.)
-```
-
-Notes that in the first run, data need to be pulled from hdfs, so it takes long time. In the consequence run, the local cache hit and the execution is much faster:
-
-```sql
-SELECT count()
-FROM hits
-
-Query id: 1f6088a0-f9c6-4c23-a4be-b1c3b1b8cb6c
-
-┌──count()─┐
-│ 99997497 │
-└──────────┘
-
-1 row in set. Elapsed: 1.545 sec. Processed 100.00 million rows, 199.99 MB (64.71 million rows/s., 129.43 MB/s.)
-```
-
 You can try to play with the table with the query provided in `datasets/clickbench.sql`.
