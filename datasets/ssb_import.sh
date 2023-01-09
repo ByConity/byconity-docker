@@ -1,4 +1,6 @@
 #!/bin/bash
+set -x -e
+
 ./clickhouse client --time --query "DROP DATABASE IF EXISTS ssb"
 ./clickhouse client --time --query "CREATE DATABASE ssb"
 ./clickhouse client --database ssb --multiquery --time < datasets/ssb_ddl.sql

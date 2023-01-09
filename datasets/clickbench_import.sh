@@ -1,4 +1,6 @@
 #!/bin/bash
+set -x -e
+
 ./clickhouse client --time --query "CREATE DATABASE IF NOT EXISTS test"
 ./clickhouse client --time --query "DROP TABLE IF EXISTS test.hits"
 

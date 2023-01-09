@@ -17,6 +17,11 @@ Before running, make sure your system has following prerequisite:
 - docker-compose
 - a docker runtime is up and running
 
+**Important notes:** this repo has been thoroughly tested on: (1) MacOS Catalina (Intel Silicon), and (2) Debian 9. For other platforms, there're some known issues:
+
+- FoundationDB docker cannot start on Apple Silicon machines
+- FoundationDB docker cannot start on WSL
+
 If you're using MacOS and cannot use docker desktop, you can:
 
 1. Install `docker` and `docker-compose` with `brew install docker docker-compose`
