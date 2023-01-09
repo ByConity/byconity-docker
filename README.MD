@@ -71,10 +71,7 @@ curl '127.0.0.1:8123/?query=select%20count()%20from%20cnch(`vw_write`,system,one
 Internally, byconity read/write to hdfs with username `clickhouse` (and data is stored in `/user/clickhouse/`), which is not created by default when starting hadoop cluster. We can use following commands to create the user `clickhouse` on hdfs.
 
 ```s
-docker exec hdfs-namenode hdfs dfs -mkdir /user
-docker exec hdfs-namenode hdfs dfs -mkdir /user/clickhouse
-docker exec hdfs-namenode hdfs dfs -chown clickhouse /user/clickhouse
-docker exec hdfs-namenode hdfs dfs -chmod -R 775 /user/clickhouse 
+hdfs/create_users.sh
 ```
 
 We can use public clickhouse client to connect to byconity. If you don't have clickhouse on your system, you can quickly download it by:
