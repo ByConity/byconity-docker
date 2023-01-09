@@ -202,7 +202,7 @@ SSB stand for *Star Schema Benchmark*. It contains four tables in a star-schema 
 To create the table and import data to it, from current directory run:
 
 ```
-./byconity/ssb_import.sh
+./datasets/ssb_import.sh
 ```
 
 The script will create the table, generate the data, import it into byconity via clickhouse client, then create the flat table. When the importing done, you play with query in `datasets/ssb.sql`
@@ -302,7 +302,7 @@ Clickbench is a benchmark by ClickHouse, which contains 1 single flat table and 
 To create the table and import data to it, from current directory run:
 
 ```
-./byconity/clickbench_import.sh
+./datasets/clickbench_import.sh
 ```
 
 The script will create the table, download the dataset, decompress it and insert into byconity via clickhouse client. When the importing done, you can test with a simple query:
