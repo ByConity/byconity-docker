@@ -196,6 +196,7 @@ services:
     container_name: daemon-manager-0
     volumes:
       - "./byconity-multiworkers-cluster/:/config/:ro"
+      - "./fdb/:/etc/byconity/fdb/"
     healthcheck:
       test:
         - CMD
