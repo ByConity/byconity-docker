@@ -91,7 +91,7 @@ curl -O 'https://builds.clickhouse.com/master/amd64/clickhouse' && chmod a+x cli
 Then connect to server by:
 
 ```s
-./clickhouse client
+./clickhouse client --password
 ```
 
 We can use following queries to create a database, create a table, insert some data to table, and query from it:
