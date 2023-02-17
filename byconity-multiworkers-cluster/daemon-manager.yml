@@ -106,3 +106,4 @@ daemon_manager:
       disable: 0
 
 hdfs_addr: "hdfs://hdfs-namenode:9000"
+cnch_config: "/config/cnch-config.yml"
