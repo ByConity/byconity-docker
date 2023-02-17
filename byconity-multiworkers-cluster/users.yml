@@ -34,3 +34,4 @@ quotas:
       result_rows: 0
       read_rows: 0
       execution_time: 0
+cnch_config: "/config/cnch-config.yml"
