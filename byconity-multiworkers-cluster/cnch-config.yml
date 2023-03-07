@@ -62,6 +62,117 @@ service_discovery:
         -
           name: PORT2
           value: 9181
+  vw_psm: data.cnch.vw
+  vw:
+    psm: data.cnch.vw
+    node:
+      vw_name: vw_write
+      host: worker-write
+      hostname: worker-write
+      ports:
+        port:
+        -
+          name: PORT2
+          value: 21557
+        -
+          name: PORT1
+          value: 30605
+        -
+          name: PORT0
+          value: 52145
+        -
+          name: PORT4
+          value: 27651
+        -
+          name: PORT3
+          value: 45443
+        -
+          name: PORT5
+          value: 47447
+        -
+          name: PORT6
+          value: 60611
+    node:
+      vw_name: vw_default
+      host: worker-default-0
+      hostname: worker-default-0
+      ports:
+        port:
+        -
+          name: PORT2
+          value: 21557
+        -
+          name: PORT1
+          value: 30605
+        -
+          name: PORT0
+          value: 52145
+        -
+          name: PORT4
+          value: 27651
+        -
+          name: PORT3
+          value: 45443
+        -
+          name: PORT5
+          value: 47447
+        -
+          name: PORT6
+          value: 60611
+    node:
+      vw_name: vw_default
+      host: worker-default-1
+      hostname: worker-default-1
+      ports:
+        port:
+        -
+          name: PORT2
+          value: 21557
+        -
+          name: PORT1
+          value: 30605
+        -
+          name: PORT0
+          value: 52145
+        -
+          name: PORT4
+          value: 27651
+        -
+          name: PORT3
+          value: 45443
+        -
+          name: PORT5
+          value: 47447
+        -
+          name: PORT6
+          value: 60611
+    node:
+      vw_name: vw_default
+      host: worker-default-2
+      hostname: worker-default-2
+      ports:
+        port:
+        -
+          name: PORT2
+          value: 21557
+        -
+          name: PORT1
+          value: 30605
+        -
+          name: PORT0
+          value: 52145
+        -
+          name: PORT4
+          value: 27651
+        -
+          name: PORT3
+          value: 45443
+        -
+          name: PORT5
+          value: 47447
+        -
+          name: PORT6
+          value: 60611
 catalog:
   name_space: default
 catalog_service:
