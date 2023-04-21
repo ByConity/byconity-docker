@@ -10,7 +10,6 @@ rm -rf ${APP_ROOT}/bin/clickhouse-odbc-bridge
 
 # strip the binary - skip for debug symbols
 strip --strip-all ${APP_ROOT}/bin/clickhouse
-strip --strip-all ${APP_ROOT}/lib/libfdb_c.so
 
 # install service
 mv /build/services/byconity /etc/service
