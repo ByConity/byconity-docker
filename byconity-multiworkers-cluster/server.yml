@@ -131,10 +131,21 @@ cnch_kafka_log:
 query_log:
   database: system
   table: query_log
-  flush_interval_milliseconds: 15000
+  flush_interval_milliseconds: 10000
+  partition_by: event_date
+server_part_log:
+  database: system
+  table: server_part_log
+  flush_interval_milliseconds: 10000
+  partition_by: event_date
+part_merge_log:
+  database: system
+  table: part_merge_log
+  flush_interval_milliseconds: 10000
   partition_by: event_date
 part_allocation_algorithm: 1
 consistent_hash_ring:
   num_replicas: 16
   num_probes: 21
   load_factor: 1.3
+cnch_config: "/config/cnch-config.yml"

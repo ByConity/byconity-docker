@@ -110,3 +110,4 @@ consistent_hash_ring:
   num_replicas: 16
   num_probes: 21
   load_factor: 1.3
+cnch_config: "/config/cnch-config.yml"

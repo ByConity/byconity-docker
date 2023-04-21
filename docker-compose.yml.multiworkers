@@ -42,7 +42,7 @@ services:
 
 # byconity:
   tso:
-    image: byconity/byconity:0.1.0-beta
+    image: byconity/byconity:latest
     command: bash -c "/etc/byconity/fdb/fdbcli -C /etc/byconity/fdb/fdb.cluster --exec \"configure new single ssd\"; tso-server --config-file /config/tso.yml"
     depends_on:
       - fdb
@@ -64,7 +64,7 @@ services:
       - SYS_PTRACE
 
   resource-manager:
-    image: byconity/byconity:0.1.0-beta
+    image: byconity/byconity:latest
     command: bash -c "resource-manager --config-file /config/resource-manager.yml"
     depends_on:
       - tso
@@ -84,7 +84,7 @@ services:
       - SYS_PTRACE
 
   server:
-    image: byconity/byconity:0.1.0-beta
+    image: byconity/byconity:latest
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 tso-0:18845/status && clickhouse-server --config-file /config/server.yml"
     depends_on:
       - tso
@@ -108,7 +108,7 @@ services:
       - SYS_PTRACE
 
   worker-write:
-    image: byconity/byconity:0.1.0-beta
+    image: byconity/byconity:latest
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && VIRTUAL_WAREHOUSE_ID=vw_write WORKER_GROUP_ID=wg_write WORKER_ID=w0 clickhouse-server --config-file /config/worker.yml"
     depends_on:
       - server
@@ -128,7 +128,7 @@ services:
       - SYS_PTRACE
 
   worker-default-0:
-    image: byconity/byconity:0.1.0-beta
+    image: byconity/byconity:latest
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && VIRTUAL_WAREHOUSE_ID=vw_default WORKER_GROUP_ID=wg_default WORKER_ID=r0 clickhouse-server --config-file /config/worker.yml"
     depends_on:
       - server
@@ -148,7 +148,7 @@ services:
       - SYS_PTRACE
 
   worker-default-1:
-    image: byconity/byconity:0.1.0-beta
+    image: byconity/byconity:latest
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && VIRTUAL_WAREHOUSE_ID=vw_default WORKER_GROUP_ID=wg_default WORKER_ID=r1 clickhouse-server --config-file /config/worker.yml"
     depends_on:
       - server
@@ -168,7 +168,7 @@ services:
       - SYS_PTRACE
 
   worker-default-2:
-    image: byconity/byconity:0.1.0-beta
+    image: byconity/byconity:latest
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && VIRTUAL_WAREHOUSE_ID=vw_default WORKER_GROUP_ID=wg_default WORKER_ID=r2 clickhouse-server --config-file /config/worker.yml"
     depends_on:
       - server
