@@ -12,7 +12,7 @@ tmp_path: /var/byconity/tmp
 tso_service:
   type: fdb
   fdb:
-    cluster_file: /etc/byconity/fdb/fdb.cluster
+    cluster_file: /config/fdb.cluster
   port: 18845
   http:
     port: 9181
