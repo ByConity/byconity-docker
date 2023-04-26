@@ -1,7 +1,4 @@
-FROM byconity/debian:buster-runit-fdb7.1.27
-
-RUN sed -i 's/mirrors.ustc.edu.cn/deb.debian.org/g' /etc/apt/sources.list
-RUN apt-get update && apt-get install -y binutils gettext-base strace bpftrace sysstat gdb
+FROM byconity/byconity-base
 
 ARG APP_ROOT=/opt/byconity/
 
