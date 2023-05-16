@@ -12,6 +12,17 @@ ADD ./clickhouse ${APP_ROOT}/bin/clickhouse
 # strip the binary - skip for debug symbols
 RUN strip --strip-all ${APP_ROOT}/bin/clickhouse
 
+# create symlink
+RUN ln -s ${APP_ROOT}/bin/clickhouse ${APP_ROOT}/bin/clickhouse-server \
+    && ln -s ${APP_ROOT}/bin/clickhouse ${APP_ROOT}/bin/clickhouse-worker \
+    && ln -s ${APP_ROOT}/bin/clickhouse ${APP_ROOT}/bin/clickhouse-client \
+    && ln -s ${APP_ROOT}/bin/clickhouse ${APP_ROOT}/bin/tso-server \
+    && ln -s ${APP_ROOT}/bin/clickhouse ${APP_ROOT}/bin/tso_server \
+    && ln -s ${APP_ROOT}/bin/clickhouse ${APP_ROOT}/bin/daemon-manager \
+    && ln -s ${APP_ROOT}/bin/clickhouse ${APP_ROOT}/bin/daemon_manager \
+    && ln -s ${APP_ROOT}/bin/clickhouse ${APP_ROOT}/bin/resource-manager \
+    && ln -s ${APP_ROOT}/bin/clickhouse ${APP_ROOT}/bin/resource_manager
+
 # install service
 RUN mv /build/services/byconity /etc/service
 
