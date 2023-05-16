@@ -10,7 +10,7 @@ timezone: Asia/Shanghai
 catalog_service:
   type: fdb
   fdb:
-    cluster_file: /etc/byconity/fdb/fdb.cluster
+    cluster_file: /config/fdb.cluster
 service_discovery:
   mode: local
   cluster: default

@@ -178,5 +178,5 @@ catalog:
 catalog_service:
   type: fdb
   fdb:
-    cluster_file: /etc/byconity/fdb/fdb.cluster
+    cluster_file: /config/fdb.cluster
 hdfs_addr: "hdfs://hdfs-namenode:9000"
