@@ -12,9 +12,6 @@ ENV PATH="${PATH}:${APP_ROOT}/bin" \
 ADD ./assets /build/
 ADD ./clickhouse ${APP_ROOT}/bin/clickhouse
 
-# strip the binary - skip for debug symbols
-RUN strip --strip-all ${APP_ROOT}/bin/clickhouse
-
 # create symlink
 RUN ln -s ${APP_ROOT}/bin/clickhouse ${APP_ROOT}/bin/clickhouse-server \
     && ln -s ${APP_ROOT}/bin/clickhouse ${APP_ROOT}/bin/clickhouse-worker \
