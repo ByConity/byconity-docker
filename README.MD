@@ -22,10 +22,10 @@ Before running, make sure your system has following prerequisite:
 - FoundationDB docker cannot start on Apple Silicon machines
 - FoundationDB docker cannot start on WSL
 
-If you're using MacOS and cannot use docker desktop, you can:
+If you're using MacOS, you can:
 
-1. Install `docker` and `docker-compose` with `brew install docker docker-compose`
-2. Use [Colima](https://github.com/abiosoft/colima) to create a docker runtime env
+1. Install [Colima](https://github.com/abiosoft/colima) to create a docker runtime env
+2. Install `docker` and `docker-compose` with `brew install docker docker-compose`
 
 ## Cluster architecture
 
