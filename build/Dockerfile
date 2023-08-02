@@ -10,6 +10,8 @@ ENV PATH="${PATH}:${APP_ROOT}/bin" \
     APP_ROOT="${APP_ROOT}"
 
 ADD ./assets /build/
+ADD ./build_info.txt ${APP_ROOT}/build_info.txt
+RUN ln -s ${APP_ROOT}/build_info.txt /build_info.txt
 ADD ./clickhouse ${APP_ROOT}/bin/clickhouse
 
 # create symlink
