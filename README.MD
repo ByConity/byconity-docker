@@ -2,7 +2,7 @@ This repo provides a quick way to play with ByConity with docker compose.
 
 Noted, since FoundationDB cannot work propertly in Docker on Apple Silicon machines, this repo is not working on mac m1/m2.
 
-The structure of this repo is shown below.
+The structure of this repo is shown below. See [How to deploy Byconity with docker](https://byconity.github.io/docs/quick-start/deploy-byconity-with-docker)
 
 | Module                      | Description |
 |----------------------------|-------------|
