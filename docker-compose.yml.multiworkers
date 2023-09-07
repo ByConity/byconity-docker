@@ -196,6 +196,6 @@ services:
         - daemon-manager-0:17553/status"
       interval: 10s
       timeout: 5s
-      retries: 5 
+      retries: 5
     cap_add:
       - SYS_PTRACE
