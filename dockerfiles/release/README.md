@@ -2,7 +2,7 @@
 
 ## 1. Prepare binary
 ```bash
-export BUILD_TYPE="Release" VERSION_SCM="0.2.0" CMAKE_FLAGS=""
+export BUILD_TYPE="Release" CMAKE_FLAGS=""
 
 docker run --rm \
   --privileged --cap-add SYS_PTRACE \

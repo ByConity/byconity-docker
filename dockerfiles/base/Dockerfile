@@ -28,6 +28,7 @@ WORKDIR ${APP_ROOT}
 
 ENV APP_ROOT="${APP_ROOT}"
 COPY build.sh /
+RUN chmod +x /build.sh
 
 ENV JAVA_HOME=/usr/lib/jvm/default-java
 RUN echo "/usr/lib/jvm/default-java/lib" >> /etc/ld.so.conf.d/libjvm.conf
