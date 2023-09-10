@@ -9,9 +9,7 @@ docker pull {image_name}
 ```bash
 git clone byconity-repo
 
-docker run -it -p 2222:2222 \
-  --privileged \
-  --cap-add SYS_PTRACE \
+docker run -it --privileged --cap-add SYS_PTRACE \
   -v ~/.m2:/root/.m2 \
   -v ~/ck/ByConity:/root/ByConity \
   --name byconity-dev \

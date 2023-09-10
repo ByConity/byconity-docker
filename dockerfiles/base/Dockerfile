@@ -24,19 +24,20 @@ RUN chmod +x llvm.sh && ./llvm.sh 11 -m https://mirrors.tuna.tsinghua.edu.cn/llv
 RUN dpkg -i foundationdb-clients.deb && rm foundationdb-clients.deb
 
 ARG APP_ROOT=/root/ByConity/
+ENV APP_ROOT="${APP_ROOT}"
 WORKDIR ${APP_ROOT}
 
-ENV APP_ROOT="${APP_ROOT}"
 COPY build.sh /
 RUN chmod +x /build.sh
 
 ENV JAVA_HOME=/usr/lib/jvm/default-java
 RUN echo "/usr/lib/jvm/default-java/lib" >> /etc/ld.so.conf.d/libjvm.conf
 RUN echo "/usr/lib/jvm/default-java/lib/server" >> /etc/ld.so.conf.d/libjvm.conf
+RUN ldconfig
 
 ENV CC=clang-11
 ENV CXX=clang++-11
-
+ENV PATH="${PATH}:/opt/byconity/bin"
 # clean
 RUN rm -rf /var/lib/apt/lists/*
 
@@ -47,7 +48,7 @@ LABEL org.opencontainers.image.source="https://github.com/ByConity/ByConity"
 ENV DEBIAN_FRONTEND=noninteractive
 RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    binutils gettext-base strace bpftrace sysstat gdb default-jdk
+    binutils gettext-base strace bpftrace sysstat gdb curl default-jdk
 
 COPY --from=downloader /downloads /downloads
 WORKDIR /downloads
@@ -56,6 +57,7 @@ RUN dpkg -i foundationdb-clients.deb && rm foundationdb-clients.deb
 ENV JAVA_HOME=/usr/lib/jvm/default-java
 RUN echo "/usr/lib/jvm/default-java/lib" >> /etc/ld.so.conf.d/libjvm.conf
 RUN echo "/usr/lib/jvm/default-java/lib/server" >> /etc/ld.so.conf.d/libjvm.conf
+RUN ldconfig
 
 ENV PATH="${PATH}:/release/bin"
 ENV CLASSPATH="${CLASSPATH}:/release/lib/jar/*.jar"

@@ -1,12 +1,13 @@
 BYCONITY_SOURCE=${HOME}/ck/ByConity
 BUILD_TYPE="Release"
-CMAKE_FLAGS=""
+CMAKE_FLAGS="-DENABLE_JAVA_EXTENSIONS=ON"
 
 pull:
 	docker pull byconity/debian-builder
 	docker pull byconity/debian-runner
 
 compile:
+	pull
 	docker run --rm \
 	--privileged --cap-add SYS_PTRACE \
 	-v ~/.m2:/root/.m2 \
@@ -18,7 +19,5 @@ build:
 	DOCKER_BUILDKIT=1 docker build -t byconity/byconity -f Dockerfile ${BYCONITY_SOURCE}
 
 release:
-	compile
-	build
 	docker tag byconity/byconity byconity/byconity:$(tag)
 	docker push byconity/byconity:$(tag)

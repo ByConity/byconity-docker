@@ -10,7 +10,6 @@ services:
       - 9870:9870
     volumes:
       - ./hdfs:${HADOOP_CONF_DIR}:ro
-      - /var/log/hadoop
       - /data1
       - /data2
     networks:
@@ -25,7 +24,6 @@ services:
       - HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
     volumes:
       - ./hdfs:${HADOOP_CONF_DIR}:ro
-      - /var/log/hadoop
       - /data1
       - /data2
     networks:
@@ -34,6 +32,7 @@ services:
 # foundation db / catalog
   fdb-0:
     image: foundationdb/foundationdb:7.1.24
+    container_name: fdb-0
     ports:
       - "4550:4550"
     environment:
@@ -136,7 +135,7 @@ services:
 
   daemon-manager-0:
     image: ${BYCONITY_IMAGE}
-    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && daemon-manager --config-file ./config/daemon-manager.yml"
+    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && daemon-manager --config-file /config/daemon-manager.yml"
     depends_on:
       - server-0
     volumes:
