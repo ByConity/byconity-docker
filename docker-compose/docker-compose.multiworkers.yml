@@ -1,10 +1,9 @@
 version: "3"
 services:
 # hdfs / remote fs
-  hdfs:
+  hdfs-namenode:
     image: gchq/hdfs:3.3
     command: namenode
-    container_name: hdfs-namenode
     environment:
       - HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
     ports:
@@ -14,13 +13,14 @@ services:
       - /var/log/hadoop
       - /data1
       - /data2
+    networks:
+      - base_net
 
   hdfs-datanode:
     depends_on:
-      - hdfs
+      - hdfs-namenode
     image: gchq/hdfs:3.3
     command: datanode
-    container_name: hdfs-datanode
     environment:
       - HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
     volumes:
@@ -28,9 +28,11 @@ services:
       - /var/log/hadoop
       - /data1
       - /data2
+    networks:
+      - base_net
 
 # foundation db / catalog
-  fdb:
+  fdb-0:
     image: foundationdb/foundationdb:7.1.24
     ports:
       - "4550:4550"
@@ -38,19 +40,20 @@ services:
       FDB_NETWORKING_MODE: container
       FDB_COORDINATOR_PORT: 4550
       FDB_PORT: 4550
-    container_name: fdb-0
+    networks:
+      - base_net
 
 # byconity:
-  tso:
-    image: byconity/byconity:0.1.0-GA
+  tso-0:
+    image: ${BYCONITY_IMAGE}
     command: bash -c "fdbcli -C /config/fdb.cluster --exec \"configure new single ssd\"; tso-server --config-file /config/tso.yml"
     depends_on:
-      - fdb
-      - hdfs
+      - fdb-0
+      - hdfs-namenode
     volumes:
-      - "./byconity-multiworkers-cluster/:/config/:ro"
+      - ${BYCONITY_BINARY_PATH}/:/opt/local/bin/:ro
+      - "./byconity-simple-cluster/:/config/:ro"
     # evironment:
-    container_name: tso-0
     healthcheck:
       test:
         - CMD
@@ -61,15 +64,16 @@ services:
       retries: 5
     cap_add:
       - SYS_PTRACE
+    networks:
+      - base_net
 
-  resource-manager:
-    image: byconity/byconity:0.1.0-GA
-    command: bash -c "resource-manager --config-file /config/resource-manager.yml"
+  resource-manager-0:
+    image: ${BYCONITY_IMAGE}
+    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 tso-0:18845/status && resource-manager --config-file /config/resource-manager.yml"
     depends_on:
-      - tso
+      - tso-0
     volumes:
       - "./byconity-multiworkers-cluster/:/config/:ro"
-    container_name: resource-manager-0
     healthcheck:
       test:
         - CMD
@@ -80,18 +84,21 @@ services:
       retries: 5
     cap_add:
       - SYS_PTRACE
+    networks:
+      - base_net
 
-  server:
-    image: byconity/byconity:0.1.0-GA
-    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 tso-0:18845/status && clickhouse-server --config-file /config/server.yml"
+  server-0:
+    image: ${BYCONITY_IMAGE}
+    command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 resource-manager-0:28989/status && clickhouse-server --config-file /config/server.yml"
     depends_on:
-      - tso
-      - hdfs
+      - tso-0
+      - hdfs-namenode
+      - resource-manager-0
     ports:
-      - "127.0.0.1:9000:52145"
+      - "9123:52145"
       - "8123:21557"
-    container_name: server-0
     volumes:
+      - ${BYCONITY_BINARY_PATH}/:/opt/local/bin/:ro
       - "./byconity-multiworkers-cluster/:/config/:ro"
     healthcheck:
       test:
@@ -103,14 +110,16 @@ services:
       retries: 5
     cap_add:
       - SYS_PTRACE
+    networks:
+      - base_net
 
   worker-write:
-    image: byconity/byconity:0.1.0-GA
+    image: ${BYCONITY_IMAGE}
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && VIRTUAL_WAREHOUSE_ID=vw_write WORKER_GROUP_ID=wg_write WORKER_ID=w0 clickhouse-server --config-file /config/worker.yml"
     depends_on:
-      - server
-    container_name: worker-write-0
+      - server-0
     volumes:
+      - ${BYCONITY_BINARY_PATH}/:/opt/local/bin/:ro
       - "./byconity-multiworkers-cluster/:/config/:ro"
     healthcheck:
       test:
@@ -122,13 +131,14 @@ services:
       retries: 5
     cap_add:
       - SYS_PTRACE
+    networks:
+      - base_net
 
   worker-default-0:
-    image: byconity/byconity:0.1.0-GA
+    image: ${BYCONITY_IMAGE}
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && VIRTUAL_WAREHOUSE_ID=vw_default WORKER_GROUP_ID=wg_default WORKER_ID=r0 clickhouse-server --config-file /config/worker.yml"
     depends_on:
-      - server
-    container_name: worker-default-0
+      - server-0
     volumes:
       - "./byconity-multiworkers-cluster/:/config/:ro"
     healthcheck:
@@ -141,14 +151,16 @@ services:
       retries: 5
     cap_add:
       - SYS_PTRACE
+    networks:
+      - base_net
 
   worker-default-1:
-    image: byconity/byconity:0.1.0-GA
+    image: ${BYCONITY_IMAGE}
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && VIRTUAL_WAREHOUSE_ID=vw_default WORKER_GROUP_ID=wg_default WORKER_ID=r1 clickhouse-server --config-file /config/worker.yml"
     depends_on:
-      - server
-    container_name: worker-default-1
+      - server-0
     volumes:
+      - ${BYCONITY_BINARY_PATH}/:/opt/local/bin/:ro
       - "./byconity-multiworkers-cluster/:/config/:ro"
     healthcheck:
       test:
@@ -160,14 +172,16 @@ services:
       retries: 5
     cap_add:
       - SYS_PTRACE
+    networks:
+      - base_net
 
   worker-default-2:
-    image: byconity/byconity:0.1.0-GA
+    image: ${BYCONITY_IMAGE}
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && VIRTUAL_WAREHOUSE_ID=vw_default WORKER_GROUP_ID=wg_default WORKER_ID=r2 clickhouse-server --config-file /config/worker.yml"
     depends_on:
-      - server
-    container_name: worker-default-2
+      - server-0
     volumes:
+      - ${BYCONITY_BINARY_PATH}/:/opt/local/bin/:ro
       - "./byconity-multiworkers-cluster/:/config/:ro"
     healthcheck:
       test:
@@ -179,15 +193,16 @@ services:
       retries: 5
     cap_add:
       - SYS_PTRACE
+    networks:
+      - base_net
 
-
-  daemon-manager:
-    image: byconity/byconity:0.1.0-GA
+  daemon-manager-0:
+    image: ${BYCONITY_IMAGE}
     command: bash -c "curl --retry 10 --retry-delay 5 --retry-connrefused --retry-max-time 120 --max-time 120 server-0:21557 && daemon-manager --config-file ./config/daemon-manager.yml"
     depends_on:
-      - server
-    container_name: daemon-manager-0
+      - server-0
     volumes:
+      - ${BYCONITY_BINARY_PATH}/:/opt/local/bin/:ro
       - "./byconity-multiworkers-cluster/:/config/:ro"
     healthcheck:
       test:
@@ -199,3 +214,9 @@ services:
       retries: 5
     cap_add:
       - SYS_PTRACE
+    networks:
+      - base_net
+
+networks:
+  base_net:
+    name: byconity_net
