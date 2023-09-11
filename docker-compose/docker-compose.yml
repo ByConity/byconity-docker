@@ -50,7 +50,7 @@ services:
       - fdb-0
       - hdfs-namenode
     volumes:
-      - ${BYCONITY_BINARY_PATH}/:/opt/byconity/bin/:ro
+      - ${BYCONITY_BINARY_PATH}/:/opt/local/bin/:ro
       - "./byconity-simple-cluster/:/config/:ro"
     # evironment:
     healthcheck:
@@ -76,7 +76,7 @@ services:
       - "9123:52145"
       - "8123:21557"
     volumes:
-      - ${BYCONITY_BINARY_PATH}/:/opt/byconity/bin/:ro
+      - ${BYCONITY_BINARY_PATH}/:/opt/local/bin/:ro
       - "./byconity-simple-cluster/:/config/:ro"
     healthcheck:
       test:
@@ -97,7 +97,7 @@ services:
     depends_on:
       - server-0
     volumes:
-      - ${BYCONITY_BINARY_PATH}/:/opt/byconity/bin/:ro
+      - ${BYCONITY_BINARY_PATH}/:/opt/local/bin/:ro
       - "./byconity-simple-cluster/:/config/:ro"
     healthcheck:
       test:
@@ -118,7 +118,7 @@ services:
     depends_on:
       - server-0
     volumes:
-      - ${BYCONITY_BINARY_PATH}/:/opt/byconity/bin/:ro
+      - ${BYCONITY_BINARY_PATH}/:/opt/local/bin/:ro
       - "./byconity-simple-cluster/:/config/:ro"
     healthcheck:
       test:
@@ -139,7 +139,7 @@ services:
     depends_on:
       - server-0
     volumes:
-      - ${BYCONITY_BINARY_PATH}/:/opt/byconity/bin/:ro
+      - ${BYCONITY_BINARY_PATH}/:/opt/local/bin/:ro
       - "./byconity-simple-cluster/:/config/:ro"
     healthcheck:
       test:

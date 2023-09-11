@@ -38,6 +38,8 @@ RUN ldconfig
 ENV CC=clang-11
 ENV CXX=clang++-11
 ENV PATH="${PATH}:/opt/byconity/bin"
+ENV PATH="${PATH}:/opt/local/bin"
+
 # clean
 RUN rm -rf /var/lib/apt/lists/*
 
@@ -53,13 +55,14 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 COPY --from=downloader /downloads /downloads
 WORKDIR /downloads
 RUN dpkg -i foundationdb-clients.deb && rm foundationdb-clients.deb
+RUN rm -rf /download
 
 ENV JAVA_HOME=/usr/lib/jvm/default-java
 RUN echo "/usr/lib/jvm/default-java/lib" >> /etc/ld.so.conf.d/libjvm.conf
 RUN echo "/usr/lib/jvm/default-java/lib/server" >> /etc/ld.so.conf.d/libjvm.conf
 RUN ldconfig
 
-ENV PATH="${PATH}:/release/bin"
-ENV CLASSPATH="${CLASSPATH}:/release/lib/jar/*.jar"
+ENV PATH="${PATH}:/opt/byconity/bin"
+ENV PATH="${PATH}:/opt/local/bin"
 
 RUN rm -rf /var/lib/apt/lists/*

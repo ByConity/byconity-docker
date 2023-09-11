@@ -1,13 +1,12 @@
 BYCONITY_SOURCE=${HOME}/ck/ByConity
 BUILD_TYPE="Release"
-CMAKE_FLAGS="-DENABLE_JAVA_EXTENSIONS=ON"
+CMAKE_FLAGS=""
 
 pull:
 	docker pull byconity/debian-builder
 	docker pull byconity/debian-runner
 
-compile:
-	pull
+compile: pull
 	docker run --rm \
 	--privileged --cap-add SYS_PTRACE \
 	-v ~/.m2:/root/.m2 \
